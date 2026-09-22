@@ -1,0 +1,83 @@
+#include <Wire.h>
+#include <LiquidCrystal_I2C.h>
+
+// LCD address (try 0x27 or 0x3F)
+LiquidCrystal_I2C lcd(0x27, 16, 2);
+
+// Pin Definitions
+#define S0 8
+#define S1 9
+#define S2 11
+#define S3 12
+#define sensorOut 10
+
+int red = 0;
+int green = 0;
+int blue = 0;
+
+void setup() {
+  pinMode(S0, OUTPUT);
+  pinMode(S1, OUTPUT);
+  pinMode(S2, OUTPUT);
+  pinMode(S3, OUTPUT);
+  pinMode(sensorOut, INPUT);
+
+  digitalWrite(S0, HIGH);
+  digitalWrite(S1, LOW);
+
+  Serial.begin(9600);
+
+  lcd.init();
+  lcd.backlight();
+  lcd.setCursor(0, 0);
+  lcd.print("Color Sensor");
+  delay(2000);
+  lcd.clear();
+}
+
+void loop() {
+  // Read RED
+  digitalWrite(S2, LOW);
+  digitalWrite(S3, LOW);
+  red = pulseIn(sensorOut, LOW);
+
+  // Read GREEN
+  digitalWrite(S2, HIGH);
+  digitalWrite(S3, HIGH);
+  green = pulseIn(sensorOut, LOW);
+
+  // Read BLUE
+  digitalWrite(S2, LOW);
+  digitalWrite(S3, HIGH);
+  blue = pulseIn(sensorOut, LOW);
+
+  // Detect Color
+  String color = "";
+
+  if (red < green && red < blue) {
+    color = "RED";
+  }
+  else if (green < red && green < blue) {
+    color = "GREEN";
+  }
+  else if (blue < red && blue < green) {
+    color = "BLUE";
+  }
+  else {
+    color = "UNCLEAR";
+  }
+
+  // Print on LCD
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print("R:");
+  lcd.print(red);
+  lcd.print(" G:");
+  lcd.print(green);
+
+  lcd.setCursor(0, 1);
+  lcd.print("Color:");
+  lcd.print(color);
+
+  delay(500);
+}
